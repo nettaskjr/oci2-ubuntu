@@ -33,6 +33,21 @@ resource "oci_core_instance" "ubuntu_instance" {
 
   metadata = {
     ssh_authorized_keys = file(var.ssh_public_key_path)
+    # Cloud-Init Script para instalar e configurar Cloudflared
+    user_data = base64encode(<<EOF
+#cloud-config
+package_update: true
+packages:
+  - curl
+runcmd:
+  - echo "Baixando Cloudflared..."
+  # Download do recurso para ARM64 (Instância A1)
+  - curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
+  - dpkg -i cloudflared.deb
+  - echo "Instalando servico Cloudflared com Token..."
+  - cloudflared service install ${cloudflare_tunnel.auto_tunnel.tunnel_token}
+EOF
+    )
   }
 
   # Garantir que a instância seja criada apenas após a rede estar pronta (embora Terraform gerencie dependências, explícito ajuda as vezes)

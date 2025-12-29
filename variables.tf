@@ -36,7 +36,6 @@ variable "api_private_key_path" {
 variable "user_instance" {
   description = "Usuário padrão da instância"
   type        = string
-  default     = "ubuntu"
 }
 
 variable "instance_display_name" {

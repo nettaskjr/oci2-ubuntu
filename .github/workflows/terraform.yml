@@ -10,31 +10,26 @@ jobs:
   terraform:
     name: "Terraform"
     runs-on: ubuntu-latest
-    
-    # É aqui que a mágica acontece. Mapeamos os Secrets do GitHub para variáveis de ambiente 
+
+    # É aqui que a mágica acontece. Mapeamos os Secrets do GitHub para variáveis de ambiente
     # que o Terraform entende (TF_VAR_nome_da_variavel).
     env:
-      # Credenciais AWS para o Backend S3
+      # Credenciais AWS para o Backend S3 (Apenas autenticação)
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: "us-east-1" # ou ${{ secrets.AWS_REGION }}
-      
+
       # Variáveis do Terraform (TF_VAR_)
+      # As demais variáveis (region, email, domain) estão configuradas em terraform.auto.tfvars
       TF_VAR_tenancy_ocid: ${{ secrets.OCI_TENANCY_OCID }}
       TF_VAR_user_ocid: ${{ secrets.OCI_USER_OCID }}
       TF_VAR_compartment_ocid: ${{ secrets.OCI_COMPARTMENT_OCID }}
       TF_VAR_fingerprint: ${{ secrets.OCI_FINGERPRINT }}
-      TF_VAR_region: "sa-saopaulo-1"
-      TF_VAR_email: ${{ secrets.MY_EMAIL }}
-      
-      # Chaves Privadas (O conteúdo do arquivo PEM deve estar no Secret)
-      # Nota: Para chaves em arquivo, é comum salvar o conteúdo do secret em um arquivo temporário durante o job
+
+      # Chaves Privadas
       OCI_PRIVATE_KEY_CONTENT: ${{ secrets.OCI_PRIVATE_KEY_PEM }}
-      
-      # Cloudflare
+
+      # Cloudflare Token (Sensível)
       TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      TF_VAR_domain_name: "app.seudominio.com"
-      TF_VAR_state_bucket_name: "meu-bucket-terraform-state"
 
     steps:
       - name: Checkout
@@ -53,7 +48,7 @@ jobs:
           chmod 600 ~/.oci/oci_api_key.pem
           # Precisamos dizer ao Terraform onde a chave está
           echo "TF_VAR_api_private_key_path=~/.oci/oci_api_key.pem" >> $GITHUB_ENV
-          
+
           # SSH Public Key (se precisar criar a instância com ela)
           echo "${{ secrets.SSH_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
           echo "TF_VAR_ssh_public_key_path=~/.ssh/id_rsa.pub" >> $GITHUB_ENV
