@@ -5,13 +5,23 @@ on:
     branches:
       - main
   pull_request:
-  workflow_dispatch: # Adiciona botão "Run workflow" no GitHub Actions
+  workflow_dispatch:
+    inputs:
+      terraform_action:
+        description: "Ação do Terraform"
+        required: true
+        default: "apply"
+        type: choice
+        options:
+          - apply
+          - destroy
 
 jobs:
   terraform:
     name: "Terraform"
     runs-on: ubuntu-latest
 
+    # ... (env vars mantidos) ...
     # É aqui que a mágica acontece. Mapeamos os Secrets do GitHub para variáveis de ambiente
     # que o Terraform entende (TF_VAR_nome_da_variavel).
     env:
@@ -79,5 +89,9 @@ jobs:
         continue-on-error: true
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && github.event.inputs.terraform_action != 'destroy'
         run: terraform apply -auto-approve -input=false
+
+      - name: Terraform Dispatch Action
+        if: github.event_name == 'workflow_dispatch'
+        run: terraform ${{ github.event.inputs.terraform_action }} -auto-approve -input=false
