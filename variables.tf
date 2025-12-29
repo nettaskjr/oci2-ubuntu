@@ -38,11 +38,6 @@ variable "user_instance" {
   type        = string
 }
 
-variable "instance_display_name" {
-  description = "Nome de exibição da instância"
-  type        = string
-}
-
 variable "instance_shape" {
   description = "Shape da instância"
   type        = string
