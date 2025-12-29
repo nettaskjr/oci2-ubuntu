@@ -84,12 +84,17 @@ variable "cloudflare_zone_id" {
   type        = string
 }
 
+variable "cloudflare_account_id" {
+  description = "ID da Conta do Cloudflare (Account ID)"
+  type        = string
+}
+
 variable "domain_name" {
   description = "Nome de domínio para o túnel (ex: app.exemplo.com)"
   type        = string
 }
 
 variable "state_bucket_name" {
-  description = "Nome do bucket S3 para backend (Nota: usado apenas informativamente ou se houver configuração dinâmica externa, pois backends não aceitam vars variávies)"
+  description = "Nome do bucket S3 para backend"
   type        = string
 }
