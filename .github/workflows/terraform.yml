@@ -1,0 +1,80 @@
+name: "Terraform Infrastructure"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  terraform:
+    name: "Terraform"
+    runs-on: ubuntu-latest
+    
+    # É aqui que a mágica acontece. Mapeamos os Secrets do GitHub para variáveis de ambiente 
+    # que o Terraform entende (TF_VAR_nome_da_variavel).
+    env:
+      # Credenciais AWS para o Backend S3
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: "us-east-1" # ou ${{ secrets.AWS_REGION }}
+      
+      # Variáveis do Terraform (TF_VAR_)
+      TF_VAR_tenancy_ocid: ${{ secrets.OCI_TENANCY_OCID }}
+      TF_VAR_user_ocid: ${{ secrets.OCI_USER_OCID }}
+      TF_VAR_compartment_ocid: ${{ secrets.OCI_COMPARTMENT_OCID }}
+      TF_VAR_fingerprint: ${{ secrets.OCI_FINGERPRINT }}
+      TF_VAR_region: "sa-saopaulo-1"
+      TF_VAR_email: ${{ secrets.MY_EMAIL }}
+      
+      # Chaves Privadas (O conteúdo do arquivo PEM deve estar no Secret)
+      # Nota: Para chaves em arquivo, é comum salvar o conteúdo do secret em um arquivo temporário durante o job
+      OCI_PRIVATE_KEY_CONTENT: ${{ secrets.OCI_PRIVATE_KEY_PEM }}
+      
+      # Cloudflare
+      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TF_VAR_domain_name: "app.seudominio.com"
+      TF_VAR_state_bucket_name: "meu-bucket-terraform-state"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      # Passo extra para criar os arquivos de chave a partir dos secrets
+      - name: Setup OCI Keys
+        run: |
+          mkdir -p ~/.oci
+          echo "$OCI_PRIVATE_KEY_CONTENT" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+          # Precisamos dizer ao Terraform onde a chave está
+          echo "TF_VAR_api_private_key_path=~/.oci/oci_api_key.pem" >> $GITHUB_ENV
+          
+          # SSH Public Key (se precisar criar a instância com ela)
+          echo "${{ secrets.SSH_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
+          echo "TF_VAR_ssh_public_key_path=~/.ssh/id_rsa.pub" >> $GITHUB_ENV
+
+      - name: Terraform Init
+        id: init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET_NAME }}" \
+            -backend-config="region=us-east-1"
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        if: github.event_name == 'pull_request'
+        run: terraform plan -no-color -input=false
+        continue-on-error: true
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve -input=false
