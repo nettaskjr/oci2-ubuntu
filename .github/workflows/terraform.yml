@@ -18,6 +18,9 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      # Bucket S3
+      TF_VAR_state_bucket_name: ${{ secrets.TF_STATE_BUCKET_NAME }}
+
       # Variáveis do Terraform (TF_VAR_)
       # As demais variáveis (region, email, domain) estão configuradas em terraform.auto.tfvars
       TF_VAR_tenancy_ocid: ${{ secrets.OCI_TENANCY_OCID }}
@@ -27,6 +30,9 @@ jobs:
 
       # Chaves Privadas
       OCI_PRIVATE_KEY_CONTENT: ${{ secrets.OCI_PRIVATE_KEY_PEM }}
+
+      # Chaves Publicas ssh
+      SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
 
       # Cloudflare Token (Sensível)
       TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -50,14 +56,14 @@ jobs:
           echo "TF_VAR_api_private_key_path=~/.oci/oci_api_key.pem" >> $GITHUB_ENV
 
           # SSH Public Key (se precisar criar a instância com ela)
-          echo "${{ secrets.SSH_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
+          echo "$SSH_PUBLIC_KEY" > ~/.ssh/id_rsa.pub
           echo "TF_VAR_ssh_public_key_path=~/.ssh/id_rsa.pub" >> $GITHUB_ENV
 
       - name: Terraform Init
         id: init
         run: |
           terraform init \
-            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET_NAME }}" \
+            -backend-config="bucket=$TF_VAR_state_bucket_name" \
             -backend-config="region=us-east-1"
 
       - name: Terraform Validate
