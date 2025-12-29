@@ -77,6 +77,7 @@ Edite o arquivo `terraform.auto.tfvars` na raiz do projeto. Estas variáveis **n
 ```hcl
 region            = "sa-saopaulo-1"
 domain_name       = "nettask.com.br" # O subdomínio será criado automaticamente (ex: app.nettask.com.br se configurado)
+cloudflare_zone_id = "xxx..." # ID da Zona (Zone ID) encontrado no dashboard da Cloudflare
 email             = "seu@email.com"
 state_bucket_name = "terraform-state-nettask.com.br" # Apenas referência para variável, o backend usa a config do init
 ```

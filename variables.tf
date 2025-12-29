@@ -36,6 +36,7 @@ variable "api_private_key_path" {
 variable "user_instance" {
   description = "Usuário padrão da instância"
   type        = string
+  default     = "ubuntu"
 }
 
 variable "instance_display_name" {
@@ -76,6 +77,11 @@ variable "cloudflare_api_token" {
   description = "Token da API do Cloudflare"
   type        = string
   sensitive   = true
+}
+
+variable "cloudflare_zone_id" {
+  description = "ID da Zona no Cloudflare (Zone ID) onde o DNS será criado"
+  type        = string
 }
 
 variable "domain_name" {
