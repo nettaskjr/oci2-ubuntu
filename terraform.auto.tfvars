@@ -12,3 +12,9 @@ email                 = "nestor.junior@gmail.com"
 # Nota: state_bucket_name aqui é apenas para a variável do Terraform. 
 # A configuração do backend (terraform init) ainda precisará do nome do bucket via CLI ou configuração, 
 # pois variáveis não funcionam no bloco backend. 
+
+# Opcionais (Defaults já definidos)
+# instance_shape           = "VM.Standard.A1.Flex"
+# instance_ocpus           = 4
+# instance_memory_in_gbs   = 24
+# boot_volume_size_in_gbs  = 50

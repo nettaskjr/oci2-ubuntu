@@ -11,9 +11,3 @@ cloudflare_api_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 # o backend deve ser configurado no bloco terraform ou via CLI, 
 # mas mantemos aqui para referência se usar scripts de wrapper)
 state_bucket_name = "terraform-state-xxxxxxxx"
-
-# Opcionais (Defaults já definidos)
-# instance_shape           = "VM.Standard.A1.Flex"
-# instance_ocpus           = 4
-# instance_memory_in_gbs   = 24
-# boot_volume_size_in_gbs  = 50

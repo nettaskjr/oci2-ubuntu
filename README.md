@@ -97,6 +97,16 @@ Apenas faça um **Push** na branch `main`.
 2.  Se for um Pull Request, fará um `terraform plan` (previsão).
 3.  Ao mergear na `main`, fará o `terraform apply`.
 
+#### Gerenciamento Manual e Destroy
+O workflow foi configurado com `workflow_dispatch`, permitindo execução manual:
+1.  Vá na aba **Actions** do GitHub.
+2.  Selecione o workflow **Terraform Infrastructure**.
+3.  Clique em **Run workflow**.
+4.  No dropdown "Ação do Terraform", escolha:
+    *   **apply**: Para criar/atualizar.
+    *   **destroy**: Para DESTRUIR toda a infraestrutura (Cuidado!).
+
+
 #### Execução Local
 1.  Exporte as credenciais AWS para o backend:
     ```bash
