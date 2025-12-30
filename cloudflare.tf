@@ -14,7 +14,7 @@ resource "cloudflare_record" "cname_tunnel" {
   zone_id = var.cloudflare_zone_id # Usando ID explícito fornecido pelo usuário
   name    = var.domain_name
   # O valor deve ser o endereço do túnel
-  value   = "${cloudflare_tunnel.auto_tunnel.id}.cfargotunnel.com"
+  content = "${cloudflare_tunnel.auto_tunnel.id}.cfargotunnel.com"
   type    = "CNAME"
   proxied = true
 }
