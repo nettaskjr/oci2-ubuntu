@@ -8,7 +8,6 @@ cloudflare_zone_id    = "e48378dc6b5deb23ee5acbb9fa75b243" # Pegue no dashboard 
 cloudflare_account_id = "d5aee7bff071474726766f0ee411b9b5" # Pegue no dashboard, mesmo lugar do Zone ID ou URL
 
 # Defaults placeholders - Você deve alterar para seus valores reais se não for usar Secrets
-# Como você removeu do Workflow, o Terraform precisará ler daqui ou de variáveis de ambiente locais.
 domain_name       = "nettask.com.br"
 state_bucket_name = "terraform-state-nettask.com.br"
 email             = "nestor.junior@gmail.com"
