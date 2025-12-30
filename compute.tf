@@ -21,7 +21,7 @@ resource "oci_core_instance" "ubuntu_instance" {
 
   create_vnic_details {
     subnet_id        = oci_core_subnet.public_subnet.id
-    display_name     = "primary-vnic"
+    display_name     = var.instance_display_name
     assign_public_ip = true
   }
 
