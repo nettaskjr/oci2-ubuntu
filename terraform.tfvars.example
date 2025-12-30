@@ -1,27 +1,19 @@
 # Renomeie este arquivo para terraform.tfvars e preencha os valores
-
-tenancy_ocid         = "ocid1.tenancy.oc1..aaaaaaa..."
-user_ocid            = "ocid1.user.oc1..aaaaaaa..."
-compartment_ocid     = "ocid1.compartment.oc1..aaaaaaa..."
-fingerprint          = "xx:xx:xx..."
-region               = "sa-saopaulo-1"
-
+tenancy_ocid         = "ocid1.tenancy.oc1..xxxxxxxx"
+user_ocid            = "ocid1.user.oc1..xxxxxxxx"
+compartment_ocid     = "ocid1.compartment.oc1..xxxxxxxx"
+fingerprint          = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ssh_public_key_path  = "/home/usuario/.ssh/id_rsa.pub"
 api_private_key_path = "/home/usuario/.oci/oci_api_key.pem"
-
-email                = "seu@email.com"
-
 # Cloudflare
-cloudflare_api_token = "seu_token_cloudflare_com_permissao_tunnel_e_dns"
-domain_name          = "app.seudominio.com"
-
+cloudflare_api_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 # Backend S3 (Nota: estas variáveis não configuram o backend automaticamente, 
 # o backend deve ser configurado no bloco terraform ou via CLI, 
 # mas mantemos aqui para referência se usar scripts de wrapper)
-state_bucket_name    = "meu-bucket-terraform-state"
+state_bucket_name = "terraform-state-xxxxxxxx"
 
 # Opcionais (Defaults já definidos)
-# instance_shape      = "VM.Standard.A1.Flex"
-# instance_ocpus      = 4
-# instance_memory_in_gbs = 24
-# boot_volume_size_in_gbs = 50
+# instance_shape           = "VM.Standard.A1.Flex"
+# instance_ocpus           = 4
+# instance_memory_in_gbs   = 24
+# boot_volume_size_in_gbs  = 50
