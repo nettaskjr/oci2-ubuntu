@@ -51,8 +51,12 @@ runcmd:
   # Instalação K3s (vamos manter o traefik default)
   - curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 644
   
-  # Aguardar K3s iniciar
-  - until k3s kubectl get node; do echo "Aguardando K3s..."; sleep 5; done
+  # Aguardar K3s iniciar o Node
+  - until k3s kubectl get node; do echo "Aguardando K3s Node..."; sleep 5; done
+  
+  # Aguardar CRDs do Traefik (race condition check)
+  # Isso garante que kind: IngressRoute seja reconhecido antes de aplicar os yamls
+  - until k3s kubectl get crd ingressroutes.traefik.io > /dev/null 2>&1; do echo "Aguardando Traefik CRDs..."; sleep 5; done
 
   # Configurar Kubeconfig para usuário ubuntu
   - mkdir -p /home/${var.user_instance}/.kube
