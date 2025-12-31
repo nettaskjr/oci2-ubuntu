@@ -8,6 +8,7 @@ cloudflare_account_id = "d5aee7bff071474726766f0ee411b9b5" # Pegue no dashboard,
 domain_name           = "nettask.com.br"
 state_bucket_name     = "terraform-state-nettask.com.br"
 email                 = "nestor.junior@gmail.com"
+github_repo           = "https://github.com/nettaskjr/manifestos-kubernetes.git"
 
 # Nota: state_bucket_name aqui é apenas para a variável do Terraform. 
 # A configuração do backend (terraform init) ainda precisará do nome do bucket via CLI ou configuração, 

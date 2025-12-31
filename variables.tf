@@ -98,3 +98,9 @@ variable "state_bucket_name" {
   description = "Nome do bucket S3 para backend"
   type        = string
 }
+
+
+variable "github_repo" {
+  description = "URL do repositório para clonar (ex: https://github.com/usuario/repo.git). Use HTTPS."
+  type        = string
+}

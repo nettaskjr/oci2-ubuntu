@@ -38,3 +38,4 @@ oci_api_key.pem
 
 # MacOS system files
 .DS_Store
+*.deb

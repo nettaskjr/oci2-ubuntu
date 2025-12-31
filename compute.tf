@@ -40,12 +40,13 @@ package_update: true
 packages:
   - curl
 runcmd:
-  - echo "Baixando Cloudflared..."
+  - echo "Baixando e instalando o Cloudflared..."
   # Download do recurso para ARM64 (Instância A1)
   - curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
   - dpkg -i cloudflared.deb
-  - echo "Instalando servico Cloudflared com Token..."
-  - cloudflared service install ${cloudflare_tunnel.auto_tunnel.tunnel_token}
+  - cloudflared service install ${cloudflare_tunnel.auto_tunnel.tunnel_token} 
+  - systemctl daemon-reload
+  - systemctl restart cloudflared
 EOF
     )
   }
