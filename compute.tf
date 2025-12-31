@@ -90,8 +90,8 @@ runcmd:
       echo "Nenhum repositório GitHub configurado."
     fi
 
-  # Instalar Portainer (usando k3s kubectl para garantir contexto)
-  - if [ -f /home/${var.user_instance}/.stack/portainer.yaml ]; then k3s kubectl apply -f /home/${var.user_instance}/.stack/portainer.yaml; else echo "Arquivo portainer.yaml não encontrado no repo!"; fi
+  # Instalar Portainer (usando kubectl para garantir contexto)
+  - if [ -f /home/${var.user_instance}/.stack/portainer.yaml ]; then kubectl apply -f /home/${var.user_instance}/.stack/portainer.yaml; else echo "Arquivo portainer.yaml não encontrado no repo!"; fi
 
 EOF
     )
