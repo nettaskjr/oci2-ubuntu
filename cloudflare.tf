@@ -31,22 +31,17 @@ resource "cloudflare_tunnel_config" "auto_tunnel_config" {
   account_id = var.cloudflare_account_id
 
   config {
-    # Regra para ACESSO SSH (ex: ssh.seudominio.com)
-    # Você deve ter um registro DNS apontando ssh.seudominio.com para esse túnel também (o wildcard cobre isso)
+    # Regra para ACESSO SSH
     ingress_rule {
       hostname = "ssh.${var.domain_name}"
       service  = "ssh://localhost:22"
     }
 
-    # Regra para aplicação web principal (ex: seudominio.com)
+    # Regra genérica para HTTP/HTTPS (Web)
+    # Roteia tanto o domínio raiz quanto qualquer outro subdomínio (definido no DNS CNAME *) para o Traefik (localhost:80)
+    # O Traefik fará o roteamento final baseado no Host header (ex: portainer.domain.com)
     ingress_rule {
-      hostname = var.domain_name
-      service  = "http://localhost:80"
-    }
-
-    # Catch-all: qualquer outra coisa falha (obrigatório terminar com regra catch-all)
-    ingress_rule {
-      service = "http_status:404"
+      service = "http://localhost:80"
     }
   }
 }
