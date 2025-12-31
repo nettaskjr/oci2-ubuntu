@@ -40,12 +40,55 @@ package_update: true
 packages:
   - curl
 runcmd:
-  - echo "Baixando Cloudflared..."
-  # Download do recurso para ARM64 (Instância A1)
+  # Cloudflared (Configuração existente)
+  - echo "Baixando e instalando o Cloudflared..."
   - curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
   - dpkg -i cloudflared.deb
-  - echo "Instalando servico Cloudflared com Token..."
-  - cloudflared service install ${cloudflare_tunnel.auto_tunnel.tunnel_token}
+  - cloudflared service install ${cloudflare_tunnel.auto_tunnel.tunnel_token} 
+  - systemctl daemon-reload
+  - systemctl restart cloudflared
+ 
+  # Instalação K3s (vamos manter o traefik default)
+  - curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 644
+  
+  # Aguardar K3s iniciar
+  - until k3s kubectl get node; do echo "Aguardando K3s..."; sleep 5; done
+
+  # Configurar Kubeconfig para usuário ubuntu
+  - mkdir -p /home/${var.user_instance}/.kube
+  - cp /etc/rancher/k3s/k3s.yaml /home/${var.user_instance}/.kube/config
+  - chown -R ${var.user_instance}:${var.user_instance} /home/${var.user_instance}/.kube
+  - echo "export KUBECONFIG=/home/${var.user_instance}/.kube/config" >> /home/${var.user_instance}/.bashrc
+
+  # Clonando repositório de Stack (Arquivos YAML)
+  # Executando como um bloco de script único para evitar erros de sintaxe YAML
+  - |
+    mkdir -p /home/${var.user_instance}/.stack
+    if [ -n "${var.github_repo}" ]; then
+      echo "Clonando repositório público: ${var.github_repo}"
+      
+      # Clona para temp
+      git clone "${var.github_repo}" /tmp/repo_temp
+      
+      # Move arquivo para a pasta .stack
+      mv /tmp/repo_temp/* /home/${var.user_instance}/.stack/ 2>/dev/null || true
+      
+      # Limpeza
+      rm -rf /tmp/repo_temp
+      rm -rf /home/${var.user_instance}/.stack/.git
+      
+      # Substitui placeholders de domínio nos arquivos YAML
+      find /home/${var.user_instance}/.stack -name "*.yaml" -type f -exec sed -i "s|<<seu-dominio>>|${var.domain_name}|g" {} +
+      
+      chown -R ${var.user_instance}:${var.user_instance} /home/${var.user_instance}/.stack
+      echo "Repositório clonado com sucesso!"
+    else
+      echo "Nenhum repositório GitHub configurado."
+    fi
+
+  # Instalar Portainer (usando k3s kubectl para garantir contexto)
+  - if [ -f /home/${var.user_instance}/.stack/portainer.yaml ]; then k3s kubectl apply -f /home/${var.user_instance}/.stack/portainer.yaml; else echo "Arquivo portainer.yaml não encontrado no repo!"; fi
+
 EOF
     )
   }

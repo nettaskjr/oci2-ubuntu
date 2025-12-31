@@ -29,16 +29,9 @@ resource "oci_core_security_list" "strict_sl" {
   vcn_id         = oci_core_vcn.main_vcn.id
   display_name   = "strict-security-list"
 
-  # Ingress: Permitir apenas SSH (TCP 22) de qualquer lugar
-  ingress_security_rules {
-    protocol = "6" # TCP
-    source   = "0.0.0.0/0"
-    tcp_options {
-      max = 22
-      min = 22
-    }
-    description = "Allow SSH from anywhere"
-  }
+  # Ingress: Bloquear todo o tráfego de entrada (Zero Trust via Cloudflare Tunnel)
+  # Nenhuma regra de ingress é necessária pois a conexão é iniciada de dentro para fora (Egress)
+
 
   # Egress: Permitir todo tráfego de saída (necessário para o Cloudflared)
   egress_security_rules {
