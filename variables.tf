@@ -68,11 +68,6 @@ variable "boot_volume_size_in_gbs" {
   default     = 50
 }
 
-variable "email" {
-  description = "Email do usuário (pode ser usado para tags ou notificações se necessário)"
-  type        = string
-}
-
 variable "cloudflare_api_token" {
   description = "Token da API do Cloudflare"
   type        = string
