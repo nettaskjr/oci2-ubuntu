@@ -1,0 +1,33 @@
+name: Restart OCI Instance
+
+on:
+    workflow_dispatch: # Gatilho manual (ClickOps)
+
+jobs:
+    restart-instance:
+        runs-on: ubuntu-latest
+        name: Restart Instance via OCI CLI
+        steps:
+            - name: Get Instance OCID
+              id: get-instance
+              uses: oracle-actions/run-oci-cli-command@v1.3.2
+              env:
+                  OCI_CLI_USER: ${{ secrets.OCI_USER_OCID }}
+                  OCI_CLI_TENANCY: ${{ secrets.OCI_TENANCY_OCID }}
+                  OCI_CLI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+                  OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_PRIVATE_KEY_PEM }}
+                  OCI_CLI_REGION: ${{ secrets.OCI_REGION }}
+              with:
+                  command: compute instance list --compartment-id ${{ secrets.OCI_COMPARTMENT_OCID }} --lifecycle-state RUNNING --sort-by TIMECREATED --sort-order DESC --limit 1 --query "data[0].id" --raw-output
+
+            - name: Restart Instance
+              if: success() && steps.get-instance.outputs.raw_output != ''
+              uses: oracle-actions/run-oci-cli-command@v1.3.2
+              env:
+                  OCI_CLI_USER: ${{ secrets.OCI_USER_OCID }}
+                  OCI_CLI_TENANCY: ${{ secrets.OCI_TENANCY_OCID }}
+                  OCI_CLI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+                  OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_PRIVATE_KEY_PEM }}
+                  OCI_CLI_REGION: ${{ secrets.OCI_REGION }}
+              with:
+                  command: compute instance action --instance-id ${{ steps.get-instance.outputs.raw_output }} --action SOFTRESET --wait-for-state RUNNING
