@@ -18,6 +18,7 @@ jobs:
                   OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_PRIVATE_KEY_PEM }}
                   OCI_CLI_REGION: ${{ secrets.OCI_REGION }}
               with:
+                  silent: false
                   command: compute instance list --compartment-id ${{ secrets.OCI_COMPARTMENT_OCID }} --lifecycle-state RUNNING --sort-by TIMECREATED --sort-order DESC --limit 1 --query "data[0].id" --raw-output
 
             - name: Restart Instance
