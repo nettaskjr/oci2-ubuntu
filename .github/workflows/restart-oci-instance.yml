@@ -20,11 +20,17 @@ jobs:
               with:
                   command: compute instance list --compartment-id ${{ secrets.OCI_COMPARTMENT_OCID }} --lifecycle-state RUNNING --sort-by TIMECREATED --sort-order DESC --query "data[0].id" --raw-output --all
 
-            - name: Debug Instance ID
-              run: echo "Instance ID found -> [${{ steps.get-instance.outputs.raw_output }}]"
+            - name: Clean Instance ID
+              id: clean-id
+              run: |
+                  RAW_ID="${{ steps.get-instance.outputs.raw_output }}"
+                  CLEAN_ID=$(echo "$RAW_ID" | tr -d '[:space:]')
+                  echo "clean_output=$CLEAN_ID" >> $GITHUB_OUTPUT
+                  echo "Original: [$RAW_ID]"
+                  echo "Cleaned:  [$CLEAN_ID]"
 
             - name: Restart Instance
-              if: success() && steps.get-instance.outputs.raw_output != ''
+              if: success() && steps.clean-id.outputs.clean_output != ''
               uses: oracle-actions/run-oci-cli-command@v1.3.2
               env:
                   OCI_CLI_USER: ${{ secrets.OCI_USER_OCID }}
@@ -34,4 +40,4 @@ jobs:
                   OCI_CLI_REGION: ${{ secrets.OCI_REGION }}
               with:
                   silent: false
-                  command: compute instance action --instance-id ${{ steps.get-instance.outputs.raw_output }} --action SOFTRESET --wait-for-state RUNNING
+                  command: compute instance action --instance-id ${{ steps.clean-id.outputs.clean_output }} --action SOFTRESET --wait-for-state RUNNING
