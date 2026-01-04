@@ -19,7 +19,7 @@ jobs:
                   OCI_CLI_REGION: ${{ secrets.OCI_REGION }}
               with:
                   silent: false
-                  command: compute instance list --compartment-id ${{ secrets.OCI_COMPARTMENT_OCID }} --lifecycle-state RUNNING --sort-by TIMECREATED --sort-order DESC --limit 1 --query "data[0].id" --raw-output
+                  command: compute instance list --compartment-id ${{ secrets.OCI_COMPARTMENT_OCID }} --lifecycle-state RUNNING --sort-by TIMECREATED --sort-order DESC --limit 1 --query "data[0].id" --raw-output --all
 
             - name: Restart Instance
               if: success() && steps.get-instance.outputs.raw_output != ''
