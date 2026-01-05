@@ -39,6 +39,7 @@ resource "oci_core_instance" "ubuntu_instance" {
 package_update: true
 packages:
   - curl
+  - git
 runcmd:
   # Cloudflared (Configuração existente)
   - echo "Baixando e instalando o Cloudflared..."
@@ -58,7 +59,7 @@ runcmd:
   # Isso garante que kind: IngressRoute seja reconhecido antes de aplicar os yamls
   - until k3s kubectl get crd ingressroutes.traefik.io > /dev/null 2>&1; do echo "Aguardando Traefik CRDs..."; sleep 5; done
 
-  # Configurar Kubeconfig para usuário ubuntu
+  # Configurar Kubeconfig para usuário local
   - mkdir -p /home/${var.user_instance}/.kube
   - cp /etc/rancher/k3s/k3s.yaml /home/${var.user_instance}/.kube/config
   - chown -R ${var.user_instance}:${var.user_instance} /home/${var.user_instance}/.kube
@@ -70,16 +71,9 @@ runcmd:
     mkdir -p /home/${var.user_instance}/.stack
     if [ -n "${var.github_repo}" ]; then
       echo "Clonando repositório público: ${var.github_repo}"
-      
-      # Clona para temp
-      git clone "${var.github_repo}" /tmp/repo_temp
-      
-      # Move arquivo para a pasta .stack
-      mv /tmp/repo_temp/* /home/${var.user_instance}/.stack/ 2>/dev/null || true
-      
-      # Limpeza
-      rm -rf /tmp/repo_temp
-      rm -rf /home/${var.user_instance}/.stack/.git
+     
+      # Clona para pasta .stack
+      git clone "${var.github_repo}" /home/${var.user_instance}/.stack
       
       # Substitui placeholders de domínio nos arquivos YAML
       find /home/${var.user_instance}/.stack -name "*.yaml" -type f -exec sed -i "s|<<seu-dominio>>|${var.domain_name}|g" {} +
@@ -90,8 +84,15 @@ runcmd:
       echo "Nenhum repositório GitHub configurado."
     fi
 
-  # Instalar Portainer (usando kubectl para garantir contexto)
-  - if [ -f /home/${var.user_instance}/.stack/portainer.yaml ]; then kubectl apply -f /home/${var.user_instance}/.stack/portainer.yaml; else echo "Arquivo portainer.yaml não encontrado no repo!"; fi
+  # Instalar Manifestos Kubernetes (Portainer + Monitoring Stack)
+  # O kubectl apply -R (recursivo) aplicará tudo que estiver dentro de .stack/
+  # Isso inclui portainer.yaml e a pasta k8s-monitoring/ se ela existir no repo
+  - if [ -d /home/${var.user_instance}/.stack ]; then 
+      echo "Aplicando manifestos Kubernetes..."
+      kubectl apply -R -f /home/${var.user_instance}/.stack/
+    else 
+      echo "Diretório .stack não encontrado!"
+    fi
 
 EOF
     )

@@ -1,0 +1,12 @@
+  # Instalar Portainer (usando kubectl para garantir contexto)
+  - if [ -f /home/${var.user_instance}/.stack/portainer.yaml ]; then kubectl apply -f /home/${var.user_instance}/.stack/portainer.yaml; else echo "Arquivo portainer.yaml não encontrado no repo!"; fi  
+  
+  # Instalar Manifestos Kubernetes (Portainer + Monitoring Stack)
+  # O kubectl apply -R (recursivo) aplicará tudo que estiver dentro de .stack/
+  # Isso inclui portainer.yaml e a pasta k8s-monitoring/ se ela existir no repo
+  - if [ -d /home/${var.user_instance}/.stack ]; then 
+      echo "Aplicando manifestos Kubernetes..."
+      kubectl apply -R -f /home/${var.user_instance}/.stack/
+    else 
+      echo "Diretório .stack não encontrado!"
+    fi
