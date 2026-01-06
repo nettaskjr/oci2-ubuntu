@@ -109,6 +109,7 @@ runcmd:
       kubectl apply -f /home/${var.user_instance}/.stack/k8s-monitoring/05-prometheus-deployment.yaml
       kubectl apply -f /home/${var.user_instance}/.stack/k8s-monitoring/06-grafana-datasource.yaml
       kubectl apply -f /home/${var.user_instance}/.stack/k8s-monitoring/07-grafana-deployment.yaml
+      kubectl apply -f /home/${var.user_instance}/.stack/k8s-monitoring/08-grafana-dashboard-provider.yaml
     else 
       echo "Diretório .stack não encontrado!"
     fi
