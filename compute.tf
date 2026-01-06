@@ -84,12 +84,31 @@ runcmd:
       echo "Nenhum repositório GitHub configurado."
     fi
 
-  # Instalar Manifestos Kubernetes (Portainer + Monitoring Stack)
-  # O kubectl apply -R (recursivo) aplicará tudo que estiver dentro de .stack/
-  # Isso inclui portainer.yaml e a pasta k8s-monitoring/ se ela existir no repo
-  - if [ -d /home/${var.user_instance}/.stack ]; then 
+  ## Instalar Manifestos Kubernetes (Portainer + Monitoring Stack)
+  ## O kubectl apply -R (recursivo) aplicará tudo que estiver dentro de .stack/
+  ## Isso inclui portainer.yaml e a pasta k8s-monitoring/ se ela existir no repo
+  #- if [ -d /home/${var.user_instance}/.stack ]; then 
+  #    echo "Aplicando manifestos Kubernetes..."
+  #    kubectl apply -R -f /home/${var.user_instance}/.stack/
+  #  else 
+  #    echo "Diretório .stack não encontrado!"
+  #  fi
+
+  # Aplicar manifestos Kubernetes (Portainer + Monitoring Stack)
+  # Vamos aplicar os manifestos 1 a 1 para evitar erros de sintaxe YAML,
+  # e para que nao executemos todos os arquivos do repositório de uma vez
+  - |
+    if [ -d /home/${var.user_instance}/.stack ]; then 
       echo "Aplicando manifestos Kubernetes..."
-      kubectl apply -R -f /home/${var.user_instance}/.stack/
+      kubectl apply -f /home/${var.user_instance}/.stack/portainer.yaml
+      kubectl apply -f /home/${var.user_instance}/.stack/k8s-monitoring/00-namespace.yaml
+      kubectl apply -f /home/${var.user_instance}/.stack/k8s-monitoring/01-loki.yaml
+      kubectl apply -f /home/${var.user_instance}/.stack/k8s-monitoring/02-promtail.yaml
+      kubectl apply -f /home/${var.user_instance}/.stack/k8s-monitoring/03-prometheus-rbac.yaml
+      kubectl apply -f /home/${var.user_instance}/.stack/k8s-monitoring/04-prometheus-config.yaml
+      kubectl apply -f /home/${var.user_instance}/.stack/k8s-monitoring/05-prometheus-deployment.yaml
+      kubectl apply -f /home/${var.user_instance}/.stack/k8s-monitoring/06-grafana-datasource.yaml
+      kubectl apply -f /home/${var.user_instance}/.stack/k8s-monitoring/07-grafana-deployment.yaml
     else 
       echo "Diretório .stack não encontrado!"
     fi

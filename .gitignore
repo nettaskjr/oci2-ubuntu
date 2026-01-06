@@ -1,6 +1,9 @@
 # Local .terraform directories
 **/.terraform/*
 
+# Pasta de yaml do k8s
+k8s-monitoring/ 
+
 # .tfstate files
 *.tfstate
 *.tfstate.*
