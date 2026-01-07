@@ -48,6 +48,14 @@ runcmd:
   - cloudflared service install ${cloudflare_tunnel.auto_tunnel.tunnel_token} 
   - systemctl daemon-reload
   - systemctl restart cloudflared
+
+  # Notificar Discord (se a URL estiver configurada)
+  - |
+    if [ -n "${var.discord_webhook_url}" ]; then
+      curl -H "Content-Type: application/json" \
+      -d '{"content": "🖥️ SSH disponível: `ssh ssh.${var.domain_name}` (Zero Trust)"}' \
+      "${var.discord_webhook_url}"
+    fi
  
   # Instalação K3s (vamos manter o traefik default)
   - curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 644
