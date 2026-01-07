@@ -68,6 +68,7 @@ runcmd:
   # Clonando repositório de Stack (Arquivos YAML)
   # Executando como um bloco de script único para evitar erros de sintaxe YAML
   - |
+    set -x # Habilita log detalhado de execução
     mkdir -p /home/${var.user_instance}/.stack
     if [ -n "${var.github_repo}" ]; then
       echo "Clonando repositório público: ${var.github_repo}"
@@ -98,6 +99,7 @@ runcmd:
   # Vamos aplicar os manifestos 1 a 1 para evitar erros de sintaxe YAML,
   # e para que nao executemos todos os arquivos do repositório de uma vez
   - |
+    set -x # Habilita log detalhado
     if [ -d /home/${var.user_instance}/.stack ]; then 
       echo "Aplicando manifestos Kubernetes..."
       kubectl apply -f /home/${var.user_instance}/.stack/portainer.yaml
@@ -112,6 +114,14 @@ runcmd:
       kubectl apply -f /home/${var.user_instance}/.stack/k8s-monitoring/08-grafana-dashboard-provider.yaml
     else 
       echo "Diretório .stack não encontrado!"
+    fi
+
+  # Notificar Discord (se a URL estiver configurada)
+  - |
+    if [ -n "${var.discord_webhook_url}" ]; then
+      curl -H "Content-Type: application/json" \
+      -d '{"content": "🚀 **Infra OCI Pronta!**\n- 🖥️ SSH: `ssh ssh.${var.domain_name}` (Zero Trust)\n- ☸️ Kubernetes: K3s Up\n- 🐳 Portainer: https://portainer.${var.domain_name}\n- 📊 Grafana: https://grafana.${var.domain_name}\n- 🔍 Loki Logs: Ativo\n\n_Deploy finalizado com sucesso!_"}' \
+      "${var.discord_webhook_url}"
     fi
 
 EOF

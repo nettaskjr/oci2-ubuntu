@@ -94,10 +94,14 @@ variable "state_bucket_name" {
   type        = string
 }
 
-
 variable "github_repo" {
   description = "URL do repositório para clonar (ex: https://github.com/usuario/repo.git). Use HTTPS."
   type        = string
 }
 
-
+variable "discord_webhook_url" {
+  description = "URL do Webhook do Discord para notificações de deploy"
+  type        = string
+  sensitive   = true
+  default     = "" # Opcional, se vazio não envia
+}

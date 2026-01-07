@@ -95,3 +95,26 @@ jobs:
       - name: Terraform Dispatch Action
         if: github.event_name == 'workflow_dispatch'
         run: terraform ${{ github.event.inputs.terraform_action }} -auto-approve -input=false
+
+      - name: Notify Discord
+        if: always() && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          STATUS: ${{ job.status }}
+          ACTION: ${{ github.event.inputs.terraform_action || 'apply' }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then echo "No Discord Webhook configured"; exit 0; fi
+
+          if [ "$STATUS" == "success" ]; then
+            COLOR=3066993 # Green
+            TITLE="✅ Terraform $ACTION Success"
+            DESC="Ação de **$ACTION** executada com sucesso na branch main."
+          else
+            COLOR=15158332 # Red
+            TITLE="❌ Terraform $ACTION Failed"
+            DESC="Houve um erro ao executar **$ACTION**. Verifique os logs do GitHub Actions."
+          fi
+
+          curl -H "Content-Type: application/json" \
+            -d "{\"embeds\": [{\"title\": \"$TITLE\", \"description\": \"$DESC\", \"color\": $COLOR}]}" \
+            "$DISCORD_WEBHOOK_URL"

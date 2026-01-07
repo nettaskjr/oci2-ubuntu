@@ -11,3 +11,5 @@ cloudflare_api_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 # o backend deve ser configurado no bloco terraform ou via CLI, 
 # mas mantemos aqui para referência se usar scripts de wrapper)
 state_bucket_name = "terraform-state-xxxxxxxx"
+# webhook do discord para envio de informacoes
+discord_webhook_url = "https://discordapp.com/api/webhooks/*********"
