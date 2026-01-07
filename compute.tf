@@ -41,6 +41,14 @@ packages:
   - curl
   - git
 runcmd:
+  # Limpar regras de firewall da Oracle (iptables) para permitir comunicação CNI
+  # Isso evita erros de "no route to host" entre Pods e API Server
+  - iptables -P INPUT ACCEPT
+  - iptables -P FORWARD ACCEPT
+  - iptables -P OUTPUT ACCEPT
+  - iptables -F
+  - netfilter-persistent save
+  
   # Cloudflared (Configuração existente)
   - echo "Baixando e instalando o Cloudflared..."
   - curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
