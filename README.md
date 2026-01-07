@@ -107,34 +107,78 @@ O workflow foi configurado com `workflow_dispatch`, permitindo execução manual
     *   **destroy**: Para DESTRUIR toda a infraestrutura (Cuidado!).
 
 
-#### Execução Local
-1.  Exporte as credenciais AWS para o backend:
-    ```bash
-    export AWS_ACCESS_KEY_ID="xxx"
-    export AWS_SECRET_ACCESS_KEY="xxx"
-    export AWS_DEFAULT_REGION="us-east-1"
-    ```
-2.  Inicialize o Terraform:
-    ```bash
-    terraform init -backend-config="bucket=SEU_BUCKET" -backend-config="region=us-east-1"
-    ```
-3.  Planeje e Aplique:
-    ```bash
-    terraform apply
-    ```
+
+### 5. Configuração de Notificações (Discord)
+
+Para receber alertas de deploy e status de restart, configure um **Webhook** no Discord:
+1. No seu servidor Discord, vá em Editar Canal > Integrações > Webhooks > Novo Webhook.
+2. Copie a URL.
+3. Adicione o Secret no GitHub: `DISCORD_WEBHOOK_URL`
+4. *(Opcional)* Adicione no `terraform.tfvars` local para testes manuais.
+
+#### Tabela Atualizada de Secrets (GitHub Actions)
+Adicione estes segredos além dos listados acima:
+
+| Secret | Descrição |
+| :--- | :--- |
+| `DISCORD_WEBHOOK_URL`| URL do Webhook Discord para notificações |
+| `SSH_PUBLIC_KEY` | Conteúdo da sua chave pública SSH (para injetar na instância) |
+| `OCI_REGION` | Região da OCI (ex: `sa-saopaulo-1`) para o workflow de Restart |
 
 ---
 
-### 5. Pós-Deploy e Acesso
-*   **Automação:** O script `user_data` (Cloud-Init) instalará automaticamente o agente `cloudflared` na instância.
-*   **Acesso:** Aguarde alguns minutos após o provisionamento. O domínio configurado (ex: `nettask.com.br` ou subdomínio) estará acessível via HTTPS, roteado pelo tunel da Cloudflare direto para sua instância, protegendo seu IP de origem.
-*   **SSH:** Para acessar a máquina:
+### 6. Observabilidade e Monitoramento 📊
+
+Esta infraestrutura já nasce com uma stack completa de monitoramento baseada em Prometheus e Grafana.
+
+**Componentes Instalados (namespace `monitoring`):**
+*   **Prometheus:** Coletor de métricas.
+*   **Loki:** Agregador de Logs.
+*   **Promtail:** Agente que envia logs dos containers para o Loki.
+*   **Node Exporter:** Métricas de hardware/SO do host.
+*   **Kube-State-Metrics:** Métricas do estado do cluster Kubernetes.
+*   **Grafana:** Visualização.
+
+**Acesso:**
+*   **URL:** `https://grafana.seu-dominio.com.br`
+*   **Credenciais Padrão:** `admin` / `admin` (Altere no primeiro login!)
+
+**Dashboards Pré-Instalados:**
+1.  **Kubernetes Cluster (ID 15757):** Visão geral de CPU/Memória/Pods do cluster.
+2.  **Node Exporter Full (ID 1860):** Detalhes profundos do servidor Linux (Rede/Disco/IO).
+3.  **Loki Kubernetes Logs (ID 13639):** Explorador de logs centralizado com busca.
+
+---
+
+### 7. Pós-Deploy e Acesso Zero Trust
+
+*   **Automação:** O script `cloud-init` instala automaticamente:
+    *   `cloudflared` (Túnel)
+    *   `k3s` (Kubernetes)
+    *   Stack de Monitoramento
+    *   Portainer
+*   **SSH Seguro:** O acesso SSH direto (porta 22 pública) foi removido. O acesso agora é via Cloudflare Tunnel:
     ```bash
-    ssh -i /caminho/para/chave_privada ubuntu@<IP_PUBLICO_OUTPUT>
+    ssh ubuntu@ssh.seu-dominio.com.br
     ```
+
+### 8. Operações "Day 2" (Manutenção)
+
+#### Reiniciar Instância OCI
+Se precisar reiniciar o servidor (travamento, kernel update), não use o painel da Oracle. Use o GitHub Actions:
+1. Vá na aba **Actions** > **Restart OCI Instance**.
+2. Clique em **Run workflow**.
+3. O workflow irá autenticar na OCI CLI e emitir um `SOFTRESET`.
+4. Você será notificado no Discord sobre o sucesso/falha.
+
+#### Destruir Infraestrutura
+Use o workflow **Terraform Infrastructure** com a opção `destroy`.
+
+---
 
 ### Estrutura de Arquivos Importantes
 *   `providers.tf`: Configuração dos provedores e backend S3.
-*   `network.tf`: VCN e Firewall (Bloqueia tudo, libera apenas SSH e Egress).
-*   `compute.tf`: Instância A1 (ARM64) com script de boot.
+*   `network.tf`: VCN e Firewall (Bloqueia tudo, libera apenas Egress e subrede interna).
+*   `compute.tf`: Instância (ARM64) + **User Data** (Script mestre de instalação).
 *   `cloudflare.tf`: Criação do Túnel Zero Trust e DNS.
+*   `k8s-monitoring/*.yaml`: Manifestos da stack de observabilidade.
