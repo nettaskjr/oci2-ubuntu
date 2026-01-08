@@ -182,3 +182,23 @@ Use o workflow **Terraform Infrastructure** com a opção `destroy`.
 *   `compute.tf`: Instância (ARM64) + **User Data** (Script mestre de instalação).
 *   `cloudflare.tf`: Criação do Túnel Zero Trust e DNS.
 *   `k8s-monitoring/*.yaml`: Manifestos da stack de observabilidade.
+
+---
+
+## ⚡ Cheat Sheet: Comandos Úteis
+
+Um resumo rápido dos comandos que você mais usará no dia a dia.
+
+| Categoria | Comando | Descrição |
+|-----------|---------|-----------|
+| **Geral** | `kubectl get pods -A` | Lista todos os pods de todos os namespaces. |
+| **Geral** | `kubectl get svc -A` | Lista todos os serviços (IPs e Portas). |
+| **Geral** | `kubectl get ing -A` | Lista todas as regras de Ingress (domínios configurados). |
+| **Logs** | `kubectl logs -f [POD] -n [NS]` | Acompanha os logs de um pod em tempo real. |
+| **Debug** | `kubectl describe pod [POD] -n [NS]` | Mostra detalhes profundos e erros de um pod. |
+| **Debug** | `kubectl delete pod [POD] -n [NS]` | Exclui (e re-cria) um pod travado. |
+| **Monitoramento** | `kubectl get pods -n monitoring` | Verifica a saúde da stack Prometheus/Grafana. |
+| **Portainer** | `kubectl rollout restart deploy portainer -n portainer` | Reinicia o Portainer (útil para erro de timeout de admin). |
+| **Cloudflare** | `kubectl logs -l app=cloudflared -n kube-system` | Vê os logs do túnel (conexão com a Cloudflare). |
+
+---
