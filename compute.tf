@@ -94,6 +94,9 @@ runcmd:
       
       # Substitui placeholders de domínio nos arquivos YAML
       find /home/${var.user_instance}/.stack -name "*.yaml" -type f -exec sed -i "s|<<seu-dominio>>|${var.domain_name}|g" {} +
+
+      # Substitui placeholder de home do usuário (necessário para HostPath do GitOps)
+      find /home/${var.user_instance}/.stack -name "*.yaml" -type f -exec sed -i "s|<<user-home>>|/home/${var.user_instance}|g" {} +
       
       chown -R ${var.user_instance}:${var.user_instance} /home/${var.user_instance}/.stack
       echo "Repositório clonado com sucesso!"
