@@ -137,7 +137,11 @@ Esta infraestrutura já nasce com uma stack completa de monitoramento baseada em
 *   **Promtail:** Agente que envia logs dos containers para o Loki.
 *   **Node Exporter:** Métricas de hardware/SO do host.
 *   **Kube-State-Metrics:** Métricas do estado do cluster Kubernetes.
+*   **Node Exporter:** Métricas de hardware/SO do host.
+*   **Kube-State-Metrics:** Métricas do estado do cluster Kubernetes.
 *   **Grafana:** Visualização.
+
+> **Nota:** Todos os serviços de monitoramento foram configurados com **Health Probes** (Liveness/Readiness) e **Resource Limits** (CPU/Memória) para garantir estabilidade e evitar "Noisy Neighbor".
 
 **Acesso:**
 *   **URL:** `https://grafana.seu-dominio.com.br`
@@ -152,14 +156,18 @@ Esta infraestrutura já nasce com uma stack completa de monitoramento baseada em
 
 ### 7. Pós-Deploy e Acesso Zero Trust
 
-*   **Automação:** O script `cloud-init` instala automaticamente:
+*   **Automação:** O script de inicialização (`scripts/user_data.sh`) é injetado via `compute.tf` e instala automaticamente:
     *   `cloudflared` (Túnel)
     *   `k3s` (Kubernetes)
     *   Stack de Monitoramento
     *   Portainer
+*   **Logs de Instalação:** Para debugar o processo de inicialização, consulte o log na instância:
+    ```bash
+    tail -f /var/log/user-data.log
+    ```
 *   **SSH Seguro:** O acesso SSH direto (porta 22 pública) foi removido. O acesso agora é via Cloudflare Tunnel:
     ```bash
-    ssh ubuntu@ssh.seu-dominio.com.br
+    ssh ssh.seu-dominio.com.br
     ```
 
 ### 8. Operações "Day 2" (Manutenção)
@@ -179,7 +187,8 @@ Use o workflow **Terraform Infrastructure** com a opção `destroy`.
 ### Estrutura de Arquivos Importantes
 *   `providers.tf`: Configuração dos provedores e backend S3.
 *   `network.tf`: VCN e Firewall (Bloqueia tudo, libera apenas Egress e subrede interna).
-*   `compute.tf`: Instância (ARM64) + **User Data** (Script mestre de instalação).
+*   `compute.tf`: Instância (ARM64) + Chamada para o script de boot.
+*   `scripts/user_data.sh`: Script BASH mestre de instalação (Executado no primeiro boot).
 *   `cloudflare.tf`: Criação do Túnel Zero Trust e DNS.
 *   `k8s-monitoring/*.yaml`: Manifestos da stack de observabilidade.
 
