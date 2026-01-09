@@ -10,6 +10,8 @@ resource "oci_core_volume" "data_volume" {
   # mesmo que o volume seja destruído manualmente, ele não será recriado.
   # caso queira destruir, mude para false, faca o apply para corrigir no estado
   # e depois o destroy.
+  # para destruir a infra sem destruir o volume, use:
+  # terraform destroy -target=oci_core_instance.ubuntu_instance
   lifecycle {
     prevent_destroy = true
   }
