@@ -9,7 +9,29 @@ echo "Iniciando configuração da instância..."
 
 # 1. Atualização e Instalação de Pacotes Básicos
 apt-get update -y
-apt-get install -y curl git
+apt-get install -y curl git xfsprogs
+
+# 1.1 Configuração do Volume Persistente (Data Volume)
+# OCI Paravirtualized attachment geralmente aparece como /dev/sdb se o boot for sda
+DATA_DEVICE="/dev/sdb"
+MOUNT_POINT="/var/lib/rancher"
+
+echo "Configurando volume de dados persistente em $DATA_DEVICE..."
+
+# Aguardar device aparecer
+while [ ! -b $DATA_DEVICE ]; do echo "Aguardando disco $DATA_DEVICE..."; sleep 5; done
+
+# Verificar se já está formatado (blkid retorna exit code 0 se tiver fs)
+if ! blkid $DATA_DEVICE; then
+    echo "Formatando $DATA_DEVICE como XFS..."
+    mkfs.xfs $DATA_DEVICE
+fi
+
+# Criar mountpoint e montar
+mkdir -p $MOUNT_POINT
+echo "$DATA_DEVICE $MOUNT_POINT xfs defaults 0 0" >> /etc/fstab
+mount -a
+echo "Volume montado em $MOUNT_POINT"
 
 # 2. Configuração de Firewall (Iptables)
 # Limpar regras de firewall da Oracle (iptables) para permitir comunicação CNI
@@ -22,7 +44,7 @@ netfilter-persistent save
 
 # 3. Instalação e Configuração do Cloudflared
 echo "Baixando e instalando o Cloudflared..."
-curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
+curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/download/${cloudflared_version}/cloudflared-linux-arm64.deb
 dpkg -i cloudflared.deb
 # O token é injetado via Terraform templatefile
 cloudflared service install ${tunnel_token} 
@@ -85,17 +107,7 @@ if [ -d "$STACK_DIR" ]; then
   
   # Aplicar monitoramento se existir
   if [ -d "$STACK_DIR/k8s-monitoring" ]; then
-    kubectl apply -f $STACK_DIR/k8s-monitoring/00-namespace.yaml
-    kubectl apply -f $STACK_DIR/k8s-monitoring/01-loki.yaml
-    kubectl apply -f $STACK_DIR/k8s-monitoring/02-promtail.yaml
-    kubectl apply -f $STACK_DIR/k8s-monitoring/03-prometheus-rbac.yaml
-    kubectl apply -f $STACK_DIR/k8s-monitoring/04-prometheus-config.yaml
-    kubectl apply -f $STACK_DIR/k8s-monitoring/05-prometheus-deployment.yaml
-    kubectl apply -f $STACK_DIR/k8s-monitoring/06-grafana-datasource.yaml
-    kubectl apply -f $STACK_DIR/k8s-monitoring/07-grafana-deployment.yaml
-    kubectl apply -f $STACK_DIR/k8s-monitoring/08-grafana-dashboard-provider.yaml
-    kubectl apply -f $STACK_DIR/k8s-monitoring/09-node-exporter.yaml
-    kubectl apply -f $STACK_DIR/k8s-monitoring/10-kube-state-metrics.yaml
+    kubectl apply -f $STACK_DIR/k8s-monitoring/
   fi
 else 
   echo "Diretório .stack não encontrado!"

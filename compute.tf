@@ -40,6 +40,7 @@ resource "oci_core_instance" "ubuntu_instance" {
       domain_name         = var.domain_name
       user_instance       = var.user_instance
       github_repo         = var.github_repo
+      cloudflared_version = var.cloudflared_version
     }))
   }
 

@@ -48,24 +48,44 @@ variable "instance_shape" {
   description = "Shape da instância"
   type        = string
   default     = "VM.Standard.A1.Flex"
+
+  validation {
+    condition     = can(regex("Flex", var.instance_shape))
+    error_message = "O shape da instância deve ser do tipo Flex (ex: VM.Standard.A1.Flex) para suportar configuração personalizada de OCPU e Memória."
+  }
 }
 
 variable "instance_ocpus" {
   description = "Número de OCPUs da instância Flex"
   type        = number
   default     = 4
+
+  validation {
+    condition     = var.instance_ocpus > 0
+    error_message = "O número de OCPUs deve ser maior que 0."
+  }
 }
 
 variable "instance_memory_in_gbs" {
   description = "Memória em GBs da instância Flex"
   type        = number
   default     = 24
+
+  validation {
+    condition     = var.instance_memory_in_gbs > 0
+    error_message = "A memória RAM deve ser maior que 0 GB."
+  }
 }
 
 variable "boot_volume_size_in_gbs" {
   description = "Tamanho do volume de boot em GBs"
   type        = number
   default     = 50
+
+  validation {
+    condition     = var.boot_volume_size_in_gbs >= 50
+    error_message = "O volume de boot deve ter no mínimo 50 GB para acomodar o OS e as aplicações."
+  }
 }
 
 variable "cloudflare_api_token" {
@@ -104,4 +124,21 @@ variable "discord_webhook_url" {
   type        = string
   sensitive   = true
   default     = "" # Opcional, se vazio não envia
+}
+
+variable "cloudflared_version" {
+  description = "Versão do Cloudflared a ser instalada (evita quebra por updates automáticos)"
+  type        = string
+  default     = "2024.1.5"
+}
+
+variable "data_volume_size_in_gbs" {
+  description = "Tamanho do volume de dados persistentes (Block Volume) em GBs"
+  type        = number
+  default     = 50
+
+  validation {
+    condition     = var.data_volume_size_in_gbs >= 50
+    error_message = "O volume de dados deve ter no mínimo 50 GB."
+  }
 }
