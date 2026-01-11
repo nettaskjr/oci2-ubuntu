@@ -146,7 +146,7 @@ fi
 if [ -d "$STACK_DIR" ]; then 
   echo "Aplicando manifestos Kubernetes..."
   # Aplicando em ordem específica
-  kubectl apply -f $STACK_DIR/portainer.yaml
+  kubectl apply -f $STACK_DIR/Portainer/portainer.yaml
   
   # Aplicar monitoramento se existir
   if [ -d "$STACK_DIR/k8s-monitoring" ]; then
