@@ -35,6 +35,7 @@ Objetivo: Garantir que os serviços iniciaram e estão saudáveis.
 | **C2** | **Deployments Monitoring** | `kubectl get pods -n monitoring` | Todos os pods (Grafana, Prometheus, Loki, Promtail) com status **Running** e **0 Restarts** (inicialmente). |
 | **C3** | **Logs de Instalação** | `cat /var/log/user-data.log` | Log deve terminar com "Configuração finalizada." e mensagem de sucesso. |
 | **C4** | **Cloudflared Service** | `systemctl status cloudflared` | Status **Active (running)**. |
+| **C5** | **Storage Persistente** | `df -h /var/lib/rancher` | Deve mostrar o dispositivo `/dev/sdb` (ou similar) montado com ~50GB. |
 
 ## 4. Observabilidade e Funcionalidade 📊
 
@@ -52,4 +53,5 @@ Objetivo: Validar se os dados estão fluindo (Metrics & Logs).
 | ID  | Teste | Comando / Ação | Resultado Esperado |
 | :--- | :--- | :--- | :--- |
 | **E1** | **Reiniciar Instância** | Executar Action GitHub "Restart OCI Instance" | A instância OCI reinicia, e após ~2 min o acesso SSH e Grafana voltam automaticamente. |
-| **E2** | **Redeploy via Terraform** | Alterar uma Label no Terraform e rodar Apply | O Terraform deve detectar a mudança e aplicar sem destruir a instância (se possível). |
+| **E2** | **Dados Persistentes (Reboot)** | Gravar arquivo em `/var/lib/rancher/teste.txt` antes do reboot. | O arquivo deve existir e conter os mesmos dados após o reinício da instância. |
+| **E3** | **Redeploy via Terraform** | Alterar uma Label no Terraform e rodar Apply | O Terraform deve detectar a mudança e aplicar sem destruir a instância (se possível). |

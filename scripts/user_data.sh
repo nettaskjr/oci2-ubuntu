@@ -18,20 +18,31 @@ MOUNT_POINT="/var/lib/rancher"
 
 echo "Configurando volume de dados persistente em $DATA_DEVICE..."
 
-# Aguardar device aparecer
-while [ ! -b $DATA_DEVICE ]; do echo "Aguardando disco $DATA_DEVICE..."; sleep 5; done
+# Aguardar device aparecer (Timeout 2 min)
+count=0
+while [ ! -b $DATA_DEVICE ] && [ $count -lt 24 ]; do 
+  echo "Aguardando disco $DATA_DEVICE... ($count/24)"
+  sleep 5
+  count=$((count+1))
+done
 
-# Verificar se já está formatado (blkid retorna exit code 0 se tiver fs)
-if ! blkid $DATA_DEVICE; then
-    echo "Formatando $DATA_DEVICE como XFS..."
-    mkfs.xfs $DATA_DEVICE
+if [ -b $DATA_DEVICE ]; then
+  # Verificar se já está formatado (blkid retorna exit code 0 se tiver fs)
+  if ! blkid $DATA_DEVICE; then
+      echo "Formatando $DATA_DEVICE como XFS..."
+      mkfs.xfs $DATA_DEVICE
+  fi
+
+  # Criar mountpoint e montar
+  mkdir -p $MOUNT_POINT
+  if ! grep -qs "$MOUNT_POINT" /etc/fstab; then
+    echo "$DATA_DEVICE $MOUNT_POINT xfs defaults 0 0" >> /etc/fstab
+  fi
+  mount -a
+  echo "Volume montado em $MOUNT_POINT"
+else
+  echo "AVISO: Disco $DATA_DEVICE não encontrado após timeout. Pulando configuração de storage."
 fi
-
-# Criar mountpoint e montar
-mkdir -p $MOUNT_POINT
-echo "$DATA_DEVICE $MOUNT_POINT xfs defaults 0 0" >> /etc/fstab
-mount -a
-echo "Volume montado em $MOUNT_POINT"
 
 # 2. Configuração de Firewall (Iptables)
 # Limpar regras de firewall da Oracle (iptables) para permitir comunicação CNI
@@ -43,13 +54,45 @@ iptables -F
 netfilter-persistent save
 
 # 3. Instalação e Configuração do Cloudflared
+# 3. Instalação e Configuração do Cloudflared (Robusta)
 echo "Baixando e instalando o Cloudflared..."
-curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/download/${cloudflared_version}/cloudflared-linux-arm64.deb
+
+# Tentar versão específica
+URL="https://github.com/cloudflare/cloudflared/releases/download/${cloudflared_version}/cloudflared-linux-arm64.deb"
+echo "Tentando baixar: $URL"
+
+if curl -L --fail --output cloudflared.deb "$URL"; then
+  echo "Download da versão ${cloudflared_version} com sucesso."
+else
+  echo "ERRO: Falha ao baixar versão ${cloudflared_version} (404?). Tentando fallback para 'latest'..."
+  if curl -L --fail --output cloudflared.deb "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb"; then
+    echo "Fallback para latest com sucesso."
+  else
+    echo "FATAL: Não foi possível baixar cloudflared (Nem versão fixa nem latest)."
+    # Notificar falha crítica no Discord
+    if [ -n "${discord_webhook_url}" ]; then
+       curl -H "Content-Type: application/json" -d '{"content": "❌ **FALHA CRÍTICA:** Não foi possível baixar o Cloudflared na instância OCI. Verifique a internet e as URLs."}' "${discord_webhook_url}"
+    fi
+    exit 1
+  fi
+fi
+
+# Instalar
 dpkg -i cloudflared.deb
+
+# Registrar Serviço
 # O token é injetado via Terraform templatefile
-cloudflared service install ${tunnel_token} 
-systemctl daemon-reload
-systemctl restart cloudflared
+echo "Registrando túnel..."
+if cloudflared service install "${tunnel_token}"; then
+  echo "Túnel registrado com sucesso."
+  systemctl daemon-reload
+  systemctl restart cloudflared
+else
+  echo "FATAL: Falha ao registrar túnel. Verifique se o Token é válido."
+  if [ -n "${discord_webhook_url}" ]; then
+       curl -H "Content-Type: application/json" -d '{"content": "❌ **FALHA CRÍTICA:** Token do Cloudflare Tunnel inválido ou erro no registro."}' "${discord_webhook_url}"
+  fi
+fi
 
 # 4. Instalação do K3s
 export K3S_KUBECONFIG_MODE="644"

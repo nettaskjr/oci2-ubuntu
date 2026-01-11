@@ -7,7 +7,7 @@ resource "oci_core_volume" "data_volume" {
 
   # Trava de segurança: Impede que o Terraform destrua este volume, 
   # mesmo ao rodar 'terraform destroy'. Garante a persistência dos dados.
-  # Caso queira destruir, mude para false, faca o apply para corrigir no estado
+  # Caso queira destruir, mude para <<false>>, faca o apply para corrigir no estado
   # e depois o destroy.
   # Para destruir a infra sem destruir o volume, use:
   # terraform destroy -target=oci_core_instance.ubuntu_instance

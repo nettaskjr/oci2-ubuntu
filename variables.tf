@@ -127,9 +127,9 @@ variable "discord_webhook_url" {
 }
 
 variable "cloudflared_version" {
-  description = "Versão do Cloudflared a ser instalada (evita quebra por updates automáticos)"
+  description = "Versão do Cloudflared a ser instalada (ex: 2025.11.1). É uma boa prática fixar a versão."
   type        = string
-  default     = "2024.1.5"
+  default     = "2025.11.1"
 }
 
 variable "data_volume_size_in_gbs" {
