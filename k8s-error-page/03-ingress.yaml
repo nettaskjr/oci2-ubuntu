@@ -1,0 +1,51 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: error-pages-middleware
+  namespace: error-pages
+spec:
+  errors:
+    status:
+      - "404"
+    service:
+      name: error-page
+      port: 80
+    query: /
+---
+# Ingress Default HTTP (Porta 80)
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: catch-all-http
+  namespace: error-pages
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: error-page
+          port: 80
+      middlewares:
+        - name: error-pages-middleware
+
+---
+# Ingress Default HTTPS (Porta 443)
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: catch-all-https
+  namespace: error-pages
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: error-page
+          port: 80
+      middlewares:
+        - name: error-pages-middleware
+  tls: {}

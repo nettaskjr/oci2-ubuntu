@@ -152,6 +152,11 @@ if [ -d "$STACK_DIR" ]; then
   if [ -d "$STACK_DIR/k8s-monitoring" ]; then
     kubectl apply -f $STACK_DIR/k8s-monitoring/
   fi
+
+  # Aplicar error-pages se existir
+  if [ -d "$STACK_DIR/k8s-error-page" ]; then
+    kubectl apply -f $STACK_DIR/k8s-error-page/
+  fi
 else 
   echo "Diretório .stack não encontrado!"
 fi
