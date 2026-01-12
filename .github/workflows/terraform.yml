@@ -92,9 +92,17 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name == 'push' && github.event.inputs.terraform_action != 'destroy'
         run: terraform apply -auto-approve -input=false
 
+      # Destroy apenas a instância (preservando storage e rede)
       - name: Terraform Dispatch Action
         if: github.event_name == 'workflow_dispatch'
-        run: terraform ${{ github.event.inputs.terraform_action }} -auto-approve -input=false
+        run: |
+          ACTION="${{ github.event.inputs.terraform_action }}"
+          if [ "$ACTION" == "destroy" ]; then
+            echo "⚠️ Executando Destroy direcionado APENAS à instância (Preservando Storage e Rede)..."
+            terraform destroy -auto-approve -input=false -target=oci_core_instance.ubuntu_instance
+          else
+            terraform $ACTION -auto-approve -input=false
+          fi
 
       - name: Notify Discord
         if: always() && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
