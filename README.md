@@ -210,5 +210,7 @@ Um resumo rápido dos comandos que você mais usará no dia a dia.
 | **Monitoramento** | `kubectl get pods -n monitoring` | Verifica a saúde da stack Prometheus/Grafana. |
 | **Portainer** | `kubectl rollout restart deploy portainer -n portainer` | Reinicia o Portainer (útil para erro de timeout de admin). |
 | **Cloudflare** | `kubectl logs -l app=cloudflared -n kube-system` | Vê os logs do túnel (conexão com a Cloudflare). |
+| **K8s** | `kubectl get nodes` | Verifica os nós do cluster Kubernetes. |
+| **K8s** | `sudo systemctl restart k3s` | Reinicia o cluster Kubernetes. |
 
 ---

@@ -9,7 +9,7 @@ echo "Iniciando configuração da instância..."
 
 # 1. Atualização e Instalação de Pacotes Básicos
 apt-get update -y
-apt-get install -y curl git xfsprogs
+apt-get install -y curl git xfsprogs ncdu
 
 # 1.1 Configuração do Volume Persistente (Data Volume)
 # OCI Paravirtualized attachment geralmente aparece como /dev/sdb se o boot for sda
